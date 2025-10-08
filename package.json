@@ -13,5 +13,12 @@
   },
   "dependencies": {
     "com.unity.textmeshpro": "3.0.4"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Attributes Example",
+      "description": "Simple attributes scriptable object example",
+      "path": "Samples~/Examples"
+    }
+  ]
 }
