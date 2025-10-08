@@ -1,0 +1,17 @@
+{
+  "name": "com.gamingxr.core",
+  "version": "1.0.0",
+  "displayName": "GamingXR Core",
+  "description": "GamingXR Core utilities for features used throughout internal projects.",
+  "unity": "2021.3",
+  "unityRelease": "0f1",
+  "documentationUrl": "https://github.com/DavidTG98/GamingXRCore",
+  "author": {
+    "name": "David Thiago",
+    "email": "david.gasparin@compasso.com.br",
+    "url": "https://github.com/DavidTG98/GamingXRCore"
+  },
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.4"
+  }
+}
