@@ -10,29 +10,29 @@ namespace GamingXRCore.SpreadsheetIntegration
 {
     public static class SpreadsheetIntegration
     {
-        public static void ReadSheet(MonoBehaviour mono, string webAppUrl, Action<List<List<string>>> callback)
+        public static void ReadSheet(MonoBehaviour mono, string webAppUrl, string tabName, Action<List<List<string>>> callback)
         {
-            mono.StartCoroutine(ReadSheetCoroutine(webAppUrl, callback));
+            mono.StartCoroutine(ReadSheetCoroutine(webAppUrl, tabName, callback));
         }
 
-        public static void WriteSheet(MonoBehaviour mono, string webAppUrl, List<List<string>> values, Action<bool> callback)
+        public static void WriteSheet(MonoBehaviour mono, string webAppUrl, string tabName, List<List<string>> values, Action<bool> callback)
         {
-            mono.StartCoroutine(WriteSheetCoroutine(webAppUrl, values, callback));
+            mono.StartCoroutine(WriteSheetCoroutine(webAppUrl, tabName, values, callback));
         }
 
-        public static void AppendRow(MonoBehaviour mono, string webAppUrl, List<string> values, Action<bool> callback)
+        public static void AppendRow(MonoBehaviour mono, string webAppUrl, string tabName, List<string> values, Action<bool> callback)
         {
-            mono.StartCoroutine(AppendRowCoroutine(webAppUrl, values, callback));
+            mono.StartCoroutine(AppendRowCoroutine(webAppUrl, tabName, values, callback));
         }
 
-        public static void AppendMultipleRows(MonoBehaviour mono, string webAppUrl, List<List<string>> rows, Action<bool> callback)
+        public static void AppendMultipleRows(MonoBehaviour mono, string webAppUrl, string tabName, List<List<string>> rows, Action<bool> callback)
         {
-            mono.StartCoroutine(AppendMultipleRowsCoroutine(webAppUrl, rows, callback));
+            mono.StartCoroutine(AppendMultipleRowsCoroutine(webAppUrl, tabName, rows, callback));
         }
 
-        private static IEnumerator ReadSheetCoroutine(string webAppUrl, Action<List<List<string>>> callback)
+        private static IEnumerator ReadSheetCoroutine(string webAppUrl, string tabName, Action<List<List<string>>> callback)
         {
-            string url = $"{webAppUrl}?range=";
+            string url = $"{webAppUrl}?range=&sheet={UnityWebRequest.EscapeURL(tabName)}";
 
             using UnityWebRequest request = UnityWebRequest.Get(url);
             yield return request.SendWebRequest();
@@ -93,21 +93,23 @@ namespace GamingXRCore.SpreadsheetIntegration
             }
         }
 
-        private static IEnumerator WriteSheetCoroutine(string webAppUrl, List<List<string>> values, Action<bool> callback)
+        private static IEnumerator WriteSheetCoroutine(string webAppUrl, string tabName, List<List<string>> values, Action<bool> callback)
         {
             WriteRequest requestData = new WriteRequest
             {
                 action = "write",
                 range = "",
+                sheet = tabName,
                 values = ConvertToStringArray(values)
             };
 
+            string url = $"{webAppUrl}?sheet={UnityWebRequest.EscapeURL(tabName)}";
             string json = JsonConvert.SerializeObject(requestData);
             Debug.Log("Write Request: " + json);
 
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
-            using UnityWebRequest request = new UnityWebRequest(webAppUrl, "POST");
+            using UnityWebRequest request = new UnityWebRequest(url, "POST");
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
@@ -129,7 +131,7 @@ namespace GamingXRCore.SpreadsheetIntegration
             }
         }
 
-        private static IEnumerator AppendRowCoroutine(string webAppUrl, List<string> values, Action<bool> callback)
+        private static IEnumerator AppendRowCoroutine(string webAppUrl, string tabName, List<string> values, Action<bool> callback)
         {
             AppendRequest requestData = new AppendRequest
             {
@@ -137,12 +139,13 @@ namespace GamingXRCore.SpreadsheetIntegration
                 values = values.ToArray()
             };
 
+            string url = $"{webAppUrl}?range=&sheet={UnityWebRequest.EscapeURL(tabName)}";
             string json = JsonConvert.SerializeObject(requestData);
             Debug.Log("Append Request: " + json);
 
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
-            using (UnityWebRequest request = new UnityWebRequest(webAppUrl, "POST"))
+            using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
             {
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = new DownloadHandlerBuffer();
@@ -166,14 +169,13 @@ namespace GamingXRCore.SpreadsheetIntegration
             }
         }
 
-
-
-        private static IEnumerator AppendMultipleRowsCoroutine(string webAppUrl, List<List<string>> rows, Action<bool> callback)
+        private static IEnumerator AppendMultipleRowsCoroutine(string webAppUrl, string tabName, List<List<string>> rows, Action<bool> callback)
         {
             WriteRequest requestData = new WriteRequest
             {
                 action = "appendMultiple",
                 range = "",
+                sheet = tabName,
                 values = ConvertToStringArray(rows)
             };
 
@@ -182,27 +184,25 @@ namespace GamingXRCore.SpreadsheetIntegration
 
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
-            using (UnityWebRequest request = new UnityWebRequest(webAppUrl, "POST"))
+            using UnityWebRequest request = new UnityWebRequest(webAppUrl, "POST");
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
             {
-                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                request.downloadHandler = new DownloadHandlerBuffer();
-                request.SetRequestHeader("Content-Type", "application/json");
+                string jsonResponse = request.downloadHandler.text;
+                Debug.Log("Append Multiple Response: " + jsonResponse);
 
-                yield return request.SendWebRequest();
-
-                if (request.result == UnityWebRequest.Result.Success)
-                {
-                    string jsonResponse = request.downloadHandler.text;
-                    Debug.Log("Append Multiple Response: " + jsonResponse);
-
-                    AppsScriptResponse response = JsonConvert.DeserializeObject<AppsScriptResponse>(jsonResponse);
-                    callback?.Invoke(response.success);
-                }
-                else
-                {
-                    Debug.LogError($"Append Multiple error: {request.error}");
-                    callback?.Invoke(false);
-                }
+                AppsScriptResponse response = JsonConvert.DeserializeObject<AppsScriptResponse>(jsonResponse);
+                callback?.Invoke(response.success);
+            }
+            else
+            {
+                Debug.LogError($"Append Multiple error: {request.error}");
+                callback?.Invoke(false);
             }
         }
 
@@ -230,6 +230,7 @@ namespace GamingXRCore.SpreadsheetIntegration
         {
             public string action;
             public string range;
+            public string sheet;
             public string[][] values;
         }
 

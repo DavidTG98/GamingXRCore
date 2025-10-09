@@ -10,13 +10,16 @@ namespace GamingXRCore.SpreadsheetIntegration
     public class SpreadsheetIntegrationExample : MonoBehaviour
     {
         [SerializeField] private string webAppUrl = "https://script.google.com/macros/s/AKfycbzLTYE_K-7epG3JRyvwuxxpht5y4WDyOn0g5PMNGA4bjBmfU_5_oFUaSoAhV5NTcUkk/exec";
+        [SerializeField] private SpreadsheetTabs tab;
         [SerializeField] private StringTable spreadsheet;
         private bool requestIsInProgress;
+
+        private enum SpreadsheetTabs { Schools, Classes, Students }
 
         private void ReadSpreadsheet()
         {
             requestIsInProgress = true;
-            SpreadsheetIntegration.ReadSheet(this, webAppUrl, OnSuccess);
+            SpreadsheetIntegration.ReadSheet(this, webAppUrl, tab.ToString(), OnSuccess);
 
             void OnSuccess(List<List<string>> list)
             {
@@ -32,7 +35,7 @@ namespace GamingXRCore.SpreadsheetIntegration
         private void WriteSpreadsheet()
         {
             requestIsInProgress = true;
-            SpreadsheetIntegration.WriteSheet(this, webAppUrl, spreadsheet.ToList(), OnSuccess);
+            SpreadsheetIntegration.WriteSheet(this, webAppUrl, tab.ToString(), spreadsheet.ToList(), OnSuccess);
 
             void OnSuccess(bool obj)
             {
