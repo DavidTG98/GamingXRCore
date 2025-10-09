@@ -7,7 +7,7 @@
   "unityRelease": "0f1",
   "documentationUrl": "https://github.com/DavidTG98/GamingXRCore",
   "author": {
-    "name": "David Thiago",
+    "name": "Compass UOL",
     "email": "david.gasparin@compasso.com.br",
     "url": "https://github.com/DavidTG98/GamingXRCore"
   },
@@ -25,7 +25,13 @@
     {
       "displayName": "Google Spreadsheet Integration",
       "description": "Read and Write Google Spreadsheets via Runtime or Editor!",
-      "path": "Samples~/SpreadsheetIntegration"
+      "path": "Samples~/Spreadsheet Integration"
+    },
+
+    {
+      "displayName": "OpenAI Integration",
+      "description": "Send and retrieve messages from OpenAI chat",
+      "path": "Samples~/OpenAI Integration"
     }
   ]
 }
