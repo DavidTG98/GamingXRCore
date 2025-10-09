@@ -1,0 +1,123 @@
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheetName = e.parameter.sheet || ss.getSheets()[0].getName();
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: "Sheet '" + sheetName + "' not found"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var range = e.parameter.range;
+    var values;
+    
+    if (range) {
+      values = sheet.getRange(range).getValues();
+    } else {
+      var dataRange = sheet.getDataRange();
+      values = dataRange.getValues();
+      
+      // Remove trailing empty rows
+      while (values.length > 0) {
+        var lastRow = values[values.length - 1];
+        var hasData = lastRow.some(function(cell) {
+          return cell !== "";
+        });
+        if (hasData) break;
+        values.pop();
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      data: values,
+      sheetName: sheetName
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var data = JSON.parse(e.postData.contents);
+    
+    var sheetName = data.sheet || ss.getSheets()[0].getName();
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: "Sheet '" + sheetName + "' not found"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === 'write') {
+      var range;
+      
+      if (!data.range || data.range === "") {
+        var numRows = data.values.length;
+        var numCols = data.values[0].length;
+        range = sheet.getRange(1, 1, numRows, numCols);
+      } else {
+        range = sheet.getRange(data.range);
+      }
+      
+      range.setValues(data.values);
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Data written successfully to ' + range.getA1Notation()
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === 'append') {
+      if (Array.isArray(data.values) && data.values.length > 0) {
+        sheet.appendRow(data.values);
+      } else {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false,
+          message: 'Invalid data format for append'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Data appended successfully'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === 'appendMultiple') {
+      // For appending multiple rows at once
+      if (Array.isArray(data.values)) {
+        for (var i = 0; i < data.values.length; i++) {
+          sheet.appendRow(data.values[i]);
+        }
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Multiple rows appended successfully'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: 'Unknown action: ' + data.action
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}

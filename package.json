@@ -12,13 +12,20 @@
     "url": "https://github.com/DavidTG98/GamingXRCore"
   },
   "dependencies": {
-    "com.unity.textmeshpro": "3.0.4"
+    "com.unity.textmeshpro": "3.0.4",
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
   "samples": [
     {
       "displayName": "Attributes Example",
       "description": "Simple attributes scriptable object example",
       "path": "Attributes/Samples~"
+    },
+
+    {
+      "displayName": "Google Spreadsheet Integration",
+      "description": "Read and Write Google Spreadsheets via Runtime or Editor!",
+      "path": "Samples~/SpreadsheetIntegration"
     }
   ]
 }
