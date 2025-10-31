@@ -43,6 +43,7 @@ namespace GamingXRCore.SpreadsheetIntegration
             }
         }
 
+#if UNITY_EDITOR
         [CustomEditor(typeof(SpreadsheetIntegrationExample))]
         private class Editor_GoogleIntegrationExample : Editor
         {
@@ -100,5 +101,6 @@ namespace GamingXRCore.SpreadsheetIntegration
                 }
             }
         }
+#endif
     }
 }
