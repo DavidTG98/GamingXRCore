@@ -12,11 +12,16 @@ namespace GamingXRCore.Utils
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            // Only run for WebGL builds
-            if (report.summary.platform != BuildTarget.WebGL)
-                return;
+#if UNITY_SERVER
+            return;
+#endif
 
-            // Obtém a versão atual (ex: "1.0.3")
+            ImproveVersion();
+        }
+
+        [MenuItem("GamingXRCore/Increment Version")]
+        private static void ImproveVersion()
+        {
             string currentVersion = PlayerSettings.bundleVersion;
 
             // Divide por pontos
