@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Reflection;
 using System;
+using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -13,59 +14,65 @@ namespace GamingXRCore.Attributes
     {
         public string ButtonLabel { get; private set; }
 
-        public ButtonAttribute(string buttonLabel)
+        public ButtonAttribute(string buttonLabel = default)
         {
             ButtonLabel = buttonLabel;
         }
     }
 
 #if UNITY_EDITOR
-    [CustomEditor(typeof(MonoBehaviour), true)]
-    public class ButtonPropertyDrawer : Editor
+    [CustomEditor(typeof(MonoBehaviour), editorForChildClasses: true)]
+    public class ButtonPropertyDrawer_MonoBehaviour : ButtonPropertyDrawer<MonoBehaviour> { }
+
+
+    [CustomEditor(typeof(ScriptableObject), editorForChildClasses: true)]
+    public class ButtonPropertyDrawer_ScriptableObject : ButtonPropertyDrawer<ScriptableObject> { }
+
+
+    public class ButtonPropertyDrawer<T> : Editor where T : UnityEngine.Object
     {
-        public override void OnInspectorGUI()
+        private T Instance;
+        private Type type;
+        private readonly List<MethodInfo> allMethods = new List<MethodInfo>();
+
+        private void OnEnable()
         {
-            base.OnInspectorGUI();
+            Instance = target as T;
+            type = Instance.GetType();
 
-            EditorGUILayout.Space(10);
-            MonoBehaviour monoBehaviour = (MonoBehaviour)target;
-            MethodInfo[] methods = monoBehaviour.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            GetMethods();
+        }
 
-            foreach (MethodInfo method in methods)
+        private void GetMethods()
+        {
+            allMethods.Clear();
+
+            while (type != null && type != typeof(MonoBehaviour))
             {
-                var attributes = method.GetCustomAttributes(typeof(ButtonAttribute), true);
-                foreach (var attribute in attributes)
-                {
-                    ButtonAttribute buttonAttribute = (ButtonAttribute)attribute;
-                    if (GUILayout.Button(buttonAttribute.ButtonLabel))
-                    {
-                        method.Invoke(monoBehaviour, null);
-                    }
-                }
+                MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+
+                allMethods.AddRange(methods);
+                type = type.BaseType;
             }
         }
-    }
 
-    [CustomEditor(typeof(ScriptableObject), true)]
-    public class ButtonPropertyDrawerScriptable : Editor
-    {
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
             EditorGUILayout.Space(10);
-            ScriptableObject scriptableObject = (ScriptableObject)target;
-            MethodInfo[] methods = scriptableObject.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
-            foreach (MethodInfo method in methods)
+            foreach (MethodInfo method in allMethods)
             {
                 var attributes = method.GetCustomAttributes(typeof(ButtonAttribute), true);
                 foreach (var attribute in attributes)
                 {
                     ButtonAttribute buttonAttribute = (ButtonAttribute)attribute;
-                    if (GUILayout.Button(buttonAttribute.ButtonLabel))
+
+                    var label = string.IsNullOrEmpty(buttonAttribute.ButtonLabel) ? method.Name : buttonAttribute.ButtonLabel;
+                    if (GUILayout.Button(label))
                     {
-                        method.Invoke(scriptableObject, null);
+                        method.Invoke(Instance, null);
                     }
                 }
             }
