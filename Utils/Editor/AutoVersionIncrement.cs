@@ -12,6 +12,10 @@ namespace GamingXRCore.Utils
 
         public void OnPreprocessBuild(BuildReport report)
         {
+#if UNITY_SERVER
+            return;
+#endif
+
             ImproveVersion();
         }
 
