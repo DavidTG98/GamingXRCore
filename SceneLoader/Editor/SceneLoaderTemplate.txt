@@ -6,7 +6,7 @@ using UnityEditor;
 namespace GamingXRCore.SceneLoader
 {
 
-    public class MenuItem_SceneShortcut
+    internal class MenuItem_SceneShortcut
     {
 	    {0}
 

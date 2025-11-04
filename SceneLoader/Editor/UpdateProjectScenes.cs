@@ -4,28 +4,14 @@ using UnityEditor;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 
 namespace GamingXRCore.SceneLoader
 {
-    static class MenuItem_GetProjectScenes
+    internal static class UpdateProjectScenes
     {
-        [MenuItem("GamingXRCore/SceneLoader/Update Project Scenes", priority = 3)]
-        private static void GetAllScenes()
+        public static void GetAllScenes(List<string> scenes)
         {
-            var basePath = MenuItem_UpdateSceneShortcut.GetBasePath();
-
-            //Pega todas as cenas que estão na build
-            int sceneCount = SceneManager.sceneCountInBuildSettings;
-
-            List<string> scenes = new List<string>();
-
-            for (int i = 0; i < sceneCount; i++)
-            {
-                string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
-                string sceneName = Path.GetFileNameWithoutExtension(scenePath);
-                scenes.Add(sceneName);
-            }
+            var basePath = SceneLoaderUtility.GetBasePath();
 
             CreateEnum(scenes, "ProjectScenes", basePath);
 
