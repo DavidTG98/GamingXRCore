@@ -21,8 +21,6 @@ namespace GamingXRCore.SceneLoader
             EditorUtility.FocusProjectWindow();
             Object obj = AssetDatabase.LoadAssetAtPath<Object>(Path.Combine($"{basePath}/Runtime"));
             EditorGUIUtility.PingObject(obj);
-
-            MenuItem_UpdateSceneShortcut.UpdateScenesShortcut();
         }
 
         private static void CreateEnum(List<string> scenes, string enumName, string basePath)

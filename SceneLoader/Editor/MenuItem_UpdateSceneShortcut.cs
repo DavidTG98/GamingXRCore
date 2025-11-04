@@ -1,8 +1,8 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace GamingXRCore.SceneLoader
 {
@@ -10,7 +10,7 @@ namespace GamingXRCore.SceneLoader
     {
         private static readonly char aspas = '"';
 
-        public static void UpdateScenesShortcut()
+        public static void UpdateScenesShortcut(List<string> scenePaths)
         {
             var basePath = SceneLoaderUtility.GetBasePath();
 
@@ -18,13 +18,11 @@ namespace GamingXRCore.SceneLoader
             var loadedContent = AssetDatabase.LoadAssetAtPath<TextAsset>(templatePath);
             string sceneItems = string.Empty;
 
-            int sceneCount = SceneManager.sceneCountInBuildSettings;
-            for (int i = 0; i < sceneCount; i++)
+            for (int i = 0; i < scenePaths.Count; i++)
             {
-                var s = SceneUtility.GetScenePathByBuildIndex(i);
-
-                sceneItems += $"[MenuItem({aspas}GamingXRCore/SceneLoader/LoadScene/{Path.GetFileNameWithoutExtension(s)}{aspas}, priority = {i})]";
-                sceneItems += $"\n\tprivate static void Load{Path.GetFileNameWithoutExtension(s)}() => LoadScene({aspas}{s}{aspas});\n\n\t";
+                string sp = scenePaths[i];
+                sceneItems += $"[MenuItem({aspas}GamingXRCore/SceneLoader/LoadScene/{Path.GetFileNameWithoutExtension(sp)}{aspas}, priority = {i})]";
+                sceneItems += $"\n\tprivate static void Load{Path.GetFileNameWithoutExtension(sp)}() => LoadScene({aspas}{sp}{aspas});\n\n\t";
             }
 
             string fullContent = loadedContent.text.Replace("{0}", sceneItems);
