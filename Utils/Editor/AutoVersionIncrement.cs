@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace GamingXRCore.Utils
 {
-    public class AutoVersionIncrement : IPreprocessBuildWithReport
+    internal class AutoVersionIncrement : IPreprocessBuildWithReport
     {
         public int callbackOrder => 0;
 
