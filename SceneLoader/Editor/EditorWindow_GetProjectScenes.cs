@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -101,6 +102,7 @@ namespace GamingXRCore.SceneLoader
         private static void Done()
         {
             UpdateProjectScenes.GetAllScenes(scenes.Where(ctx => ctx.isSelected).Select(ctx => ctx.name).ToList());
+            MenuItem_UpdateSceneShortcut.UpdateScenesShortcut(scenes.Where(ctx => ctx.isSelected).Select(ctx => ctx.path).ToList());
             window.Close();
         }
 
@@ -141,3 +143,4 @@ namespace GamingXRCore.SceneLoader
         }
     }
 }
+#endif

@@ -1,6 +1,6 @@
 {
   "name": "com.gamingxr.core",
-  "version": "1.0.0",
+  "version": "1.5.7",
   "displayName": "GamingXR Core",
   "description": "GamingXR Core utilities for features used throughout internal projects.",
   "unity": "2021.3",
