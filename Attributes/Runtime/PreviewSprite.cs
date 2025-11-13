@@ -1,6 +1,5 @@
 using UnityEngine;
-
-# if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -9,7 +8,6 @@ namespace GamingXRCore.Attributes
     public class PreviewSprite : PropertyAttribute
     {
         public float imageSize;
-
         public PreviewSprite(float imageSize)
         {
             this.imageSize = imageSize;
@@ -20,11 +18,7 @@ namespace GamingXRCore.Attributes
     [CustomPropertyDrawer(typeof(PreviewSprite))]
     public class PreviewSpriteDrawer : PropertyDrawer
     {
-        //const float imageHeight = 100;
-        private Texture2D spriteTexture;
-
-        public override float GetPropertyHeight(SerializedProperty property,
-                                                GUIContent label)
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             if (property.propertyType == SerializedPropertyType.ObjectReference &&
                 (property.objectReferenceValue as Sprite) != null)
@@ -34,18 +28,11 @@ namespace GamingXRCore.Attributes
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
 
-        static string GetPath(SerializedProperty property)
-        {
-            string path = property.propertyPath;
-            int index = path.LastIndexOf(".");
-            return path.Substring(0, index + 1);
-        }
-
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             PreviewSprite thisAttribute = attribute as PreviewSprite;
 
-            //Draw the normal property field
+            // Draw the normal property field
             EditorGUI.PropertyField(position, property, label, true);
 
             if (property.propertyType == SerializedPropertyType.ObjectReference)
@@ -56,32 +43,48 @@ namespace GamingXRCore.Attributes
                     position.y += EditorGUI.GetPropertyHeight(property, label, true) + 5;
                     position.height = thisAttribute.imageSize;
 
-                    if (spriteTexture == null)
-                        spriteTexture = TryGetTextureFromAtlas(sprite);
-
-                    GUI.DrawTexture(position, spriteTexture, ScaleMode.ScaleToFit);
+                    // Draw the sprite portion using GUI with texture coordinates
+                    DrawSpritePreview(position, sprite);
                 }
             }
+        }
 
-            static Texture2D TryGetTextureFromAtlas(Sprite sprite)
+        static void DrawSpritePreview(Rect position, Sprite sprite)
+        {
+            Rect spriteRect = sprite.textureRect;
+            Texture2D texture = sprite.texture;
+
+            // Calculate UV coordinates for the sprite within the atlas
+            Rect uvRect = new Rect(
+                spriteRect.x / texture.width,
+                spriteRect.y / texture.height,
+                spriteRect.width / texture.width,
+                spriteRect.height / texture.height
+            );
+
+            // Calculate aspect ratio and adjust rect to maintain it
+            float spriteAspect = spriteRect.width / spriteRect.height;
+            float rectAspect = position.width / position.height;
+
+            Rect drawRect = position;
+
+            if (spriteAspect > rectAspect)
             {
-                try
-                {
-                    Texture2D croppedTexture = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
-
-                    Color[] pixels = sprite.texture.GetPixels((int)sprite.textureRect.x,
-                                                          (int)sprite.textureRect.y,
-                                                          (int)sprite.textureRect.width,
-                                                          (int)sprite.textureRect.height);
-                    croppedTexture.SetPixels(pixels);
-                    croppedTexture.Apply();
-                    return croppedTexture;
-                }
-                catch
-                {
-                    return sprite.texture;
-                }
+                // Sprite is wider - fit to width, adjust height
+                float newHeight = position.width / spriteAspect;
+                drawRect.y += (position.height - newHeight) / 2;
+                drawRect.height = newHeight;
             }
+            else
+            {
+                // Sprite is taller - fit to height, adjust width
+                float newWidth = position.height * spriteAspect;
+                drawRect.x += (position.width - newWidth) / 2;
+                drawRect.width = newWidth;
+            }
+
+            // Draw only the sprite portion using UV coordinates
+            GUI.DrawTextureWithTexCoords(drawRect, texture, uvRect);
         }
     }
 #endif
