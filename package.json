@@ -1,6 +1,6 @@
 {
   "name": "com.gamingxr.core",
-  "version": "1.5.7",
+  "version": "1.6.0",
   "displayName": "GamingXR Core",
   "description": "GamingXR Core utilities for features used throughout internal projects.",
   "unity": "2021.3",
@@ -32,6 +32,12 @@
       "displayName": "OpenAI Integration",
       "description": "Send and retrieve messages from OpenAI chat",
       "path": "Samples~/OpenAI Integration"
+    },
+
+    {
+      "displayName": "Tooltip",
+      "description": "Show a info box with Header and Content above UI elements.",
+      "path": "Samples~/Tooltip"
     }
   ]
 }
